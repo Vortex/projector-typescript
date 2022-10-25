@@ -1,4 +1,4 @@
-import path from "path";
+import * as path from "path";
 import { Opts } from "./opts";
 
 export enum Operation {
@@ -48,7 +48,7 @@ function getArgs(opts: Opts): string[] {
     const operation = getOperation(opts);
     if (operation === Operation.Print) {
         if (opts.args.length > 1) {
-            throw new Error(`expected 0 or 1 arguments but got ${opts.args.legnth}`);
+            throw new Error(`expected 0 or 1 arguments but got ${opts.args.length}`);
         }
         return opts.args;
     }
@@ -71,11 +71,11 @@ function getOperation(opts: Opts): Operation {
         return Operation.Print;
     }
 
-    if (opts[0] === "add") {
+    if (opts.args[0] === "add") {
         return Operation.Add;
     }
 
-    if (opts[0] === "rm") {
+    if (opts.args[0] === "rm") {
         return Operation.Remove
     }
 
