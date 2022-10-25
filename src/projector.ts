@@ -1,5 +1,6 @@
 import { Config } from "./config"
 import * as fs from "fs";
+import path = require("path");
 
 export type Data = {
     projector: {
@@ -19,13 +20,62 @@ export default class Projector {
 
     constructor(private config: Config, private data:Data) {}
 
-    getValueAll(): {[key: string]: string} {}
+    getValueAll(): {[key: string]: string} {
+        let curr = this.config.pwd;
+        let prev = "";
 
-    getValue(): string | undefined {}
+        const paths = [];
 
-    setValue() {}
+        do {
+            prev = curr;
+            paths.push(curr);
+            curr = path.dirname(curr);
+        } while (curr != prev);
 
-    removeValue() {}
+        return paths.reverse().reduce((acc, path) => {
+            const value = this.data.projector[path];
+            if (value) {
+                Object.assign(acc, value);
+            }
+            return acc;
+        }, {})
+
+    }
+
+    getValue(key: string): string | undefined {
+        let curr = this.config.pwd;
+        let prev = "";
+        let out: string = undefined;
+        do {
+            const value = this.data.projector[curr]?.[key];
+            if (value) {
+                out = value;
+                break;
+            }
+
+            prev = curr;
+            curr = path.dirname(curr);
+        
+        } while (curr != prev);
+
+        return out;
+    }
+
+    setValue(key: string, value: string) {
+        let dir = this.data.projector[this.config.pwd];
+        if (!dir) {
+            dir = this.data.projector[this.config.pwd] = {};
+        }
+
+        dir[key] = value;
+    }
+
+    removeValue(key:string) {
+        let dir = this.data.projector[this.config.pwd];
+        if (dir) {
+            delete dir[key];
+        }
+    }
 
     static fromConfig(config: Config): Projector {
         if (fs.existsSync(config.config)) {
